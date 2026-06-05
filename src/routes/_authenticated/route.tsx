@@ -84,9 +84,16 @@ function AuthenticatedLayout() {
               activeProps={{ className: "bg-primary/15 text-primary" }}
               className={navLink}
             >
-              <LayoutDashboard className="h-4 w-4" />
-              <span className="hidden sm:inline">Relatórios em aberto</span>
-              <span className="sm:hidden">Em aberto</span>
+              <FilePlus2 className="h-4 w-4" />
+              <span className="hidden sm:inline">Criar</span>
+            </Link>
+            <Link
+              to="/abertos"
+              activeProps={{ className: "bg-primary/15 text-primary" }}
+              className={navLink}
+            >
+              <Radio className="h-4 w-4" />
+              <span className="hidden sm:inline">Em aberto</span>
             </Link>
             <Link
               to="/arquivo"
