@@ -49,7 +49,7 @@ function elapsedFrom(iso: string) {
 function AbertosPage() {
   const [list, setList] = useState<ViaturaReport[]>([]);
   const [loading, setLoading] = useState(true);
-  const [username, setUsername] = useState("");
+  const [nomeCidade, setNomeCidade] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
   const [, setTick] = useState(0);
 
@@ -57,7 +57,20 @@ function AbertosPage() {
     setLoading(true);
     const { data: u } = await supabase.auth.getUser();
     setUserId(u.user?.id ?? null);
-    setUsername(usernameFromEmail(u.user?.email));
+
+    // Buscar nome_cidade do perfil
+    let nc = "";
+    if (u.user?.id) {
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("nome_cidade")
+        .eq("id", u.user.id)
+        .maybeSingle();
+      nc = prof?.nome_cidade ?? "";
+    }
+    if (!nc) nc = usernameFromEmail(u.user?.email);
+    setNomeCidade(nc);
+
     const { data, error } = await supabase
       .from("viatura_reports")
       .select("*")
@@ -80,13 +93,13 @@ function AbertosPage() {
 
   async function join(p: ViaturaReport) {
     const current = p.colaboradores ?? [];
-    if (!current.includes(username)) {
+    if (!current.includes(nomeCidade)) {
       const { error } = await supabase
         .from("viatura_reports")
-        .update({ colaboradores: [...current, username] })
+        .update({ colaboradores: [...current, nomeCidade] })
         .eq("id", p.id);
       if (error) return toast.error(error.message);
-      toast.success(`Conectado como ${username}`);
+      toast.success(`Conectado como ${nomeCidade}`);
     }
     window.location.assign("/");
   }
@@ -114,7 +127,7 @@ function AbertosPage() {
       ) : (
         <div className="space-y-3">
           {list.map((p) => {
-            const mine = p.user_id === userId || (p.colaboradores ?? []).includes(username);
+            const mine = p.user_id === userId || (p.colaboradores ?? []).includes(nomeCidade);
             return (
               <Card key={p.id} className="p-4 flex flex-col sm:flex-row sm:items-center gap-3">
                 <div className="flex-1 min-w-0">
@@ -137,7 +150,7 @@ function AbertosPage() {
                     <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1 flex-wrap">
                       <Users className="h-3 w-3" />
                       {p.colaboradores!.map((c) => (
-                        <Badge key={c} variant={c === username ? "default" : "secondary"} className="text-[10px]">{c}</Badge>
+                        <Badge key={c} variant={c === nomeCidade ? "default" : "secondary"} className="text-[10px]">{c}</Badge>
                       ))}
                     </div>
                   )}

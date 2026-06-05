@@ -68,7 +68,7 @@ function usernameFromEmail(email: string | null | undefined) {
 
 function PatrolPage() {
   const [userId, setUserId] = useState<string | null>(null);
-  const [username, setUsername] = useState<string>("");
+  const [nomeCidade, setNomeCidade] = useState<string>("");
   const [openPatrols, setOpenPatrols] = useState<ViaturaReport[]>([]);
   const [active, setActive] = useState<ViaturaReport | null>(null);
   const [loading, setLoading] = useState(true);
@@ -108,9 +108,19 @@ function PatrolPage() {
     setLoading(true);
     const { data: userData } = await supabase.auth.getUser();
     const uid = userData.user?.id ?? null;
-    const uname = usernameFromEmail(userData.user?.email);
+
+    let nc = "";
+    if (uid) {
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("nome_cidade")
+        .eq("id", uid)
+        .maybeSingle();
+      nc = prof?.nome_cidade ?? "";
+    }
+    if (!nc) nc = usernameFromEmail(userData.user?.email);
     setUserId(uid);
-    setUsername(uname);
+    setNomeCidade(nc);
 
     // Load all open patrols (visible to any authenticated user via RLS)
     const { data: open } = await supabase
@@ -123,7 +133,7 @@ function PatrolPage() {
 
     // Find patrol the user is in (owner or collaborator)
     const mine = opens.find(
-      (p) => p.user_id === uid || (p.colaboradores ?? []).includes(uname),
+      (p) => p.user_id === uid || (p.colaboradores ?? []).includes(nc),
     );
 
     if (mine) {
@@ -179,7 +189,7 @@ function PatrolPage() {
       chefe_barca: startForm.chefe_barca,
       auxiliar: startForm.auxiliar || null,
       anotador: startForm.anotador || null,
-      colaboradores: [usernameFromEmail(userData.user.email)],
+      colaboradores: [nomeCidade || usernameFromEmail(userData.user.email)],
     });
     setSaving(false);
     if (error) return toast.error(error.message);
@@ -190,17 +200,17 @@ function PatrolPage() {
 
   async function joinPatrol(p: ViaturaReport) {
     const current = p.colaboradores ?? [];
-    if (current.includes(username)) {
+    if (current.includes(nomeCidade)) {
       setActive(p);
       return;
     }
-    const next = [...current, username];
+    const next = [...current, nomeCidade];
     const { error } = await supabase
       .from("viatura_reports")
       .update({ colaboradores: next })
       .eq("id", p.id);
     if (error) return toast.error(error.message);
-    toast.success(`Conectado como ${username}`);
+    toast.success(`Conectado como ${nomeCidade}`);
     load();
   }
 
@@ -363,7 +373,7 @@ function PatrolPage() {
             {isFinalized ? "PATRULHA FINALIZADA" : "EM PATRULHAMENTO"}
           </h1>
           <p className="text-xs text-muted-foreground uppercase tracking-widest">
-            {isFinalized ? "Pronto para arquivar" : isOwner ? "Cronômetro ativo · você é o criador" : `Conectado como ${username}`}
+            {isFinalized ? "Pronto para arquivar" : isOwner ? "Cronômetro ativo · você é o criador" : `Conectado como ${nomeCidade}`}
           </p>
         </div>
       </div>
@@ -390,7 +400,7 @@ function PatrolPage() {
             </div>
             <div className="flex flex-wrap gap-2">
               {active.colaboradores!.map((c) => (
-                <Badge key={c} variant={c === username ? "default" : "secondary"} className="text-xs">{c}</Badge>
+                <Badge key={c} variant={c === nomeCidade ? "default" : "secondary"} className="text-xs">{c}</Badge>
               ))}
             </div>
           </div>
