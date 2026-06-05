@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect, Link, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { Shield, Archive, LayoutDashboard, LogOut, UserCircle2, Tag } from "lucide-react";
+import { Shield, Archive, LogOut, UserCircle2, Tag, FilePlus2, Radio } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { usePresence } from "@/hooks/use-presence";
@@ -84,9 +84,16 @@ function AuthenticatedLayout() {
               activeProps={{ className: "bg-primary/15 text-primary" }}
               className={navLink}
             >
-              <LayoutDashboard className="h-4 w-4" />
-              <span className="hidden sm:inline">Relatórios em aberto</span>
-              <span className="sm:hidden">Em aberto</span>
+              <FilePlus2 className="h-4 w-4" />
+              <span className="hidden sm:inline">Criar</span>
+            </Link>
+            <Link
+              to="/abertos"
+              activeProps={{ className: "bg-primary/15 text-primary" }}
+              className={navLink}
+            >
+              <Radio className="h-4 w-4" />
+              <span className="hidden sm:inline">Em aberto</span>
             </Link>
             <Link
               to="/arquivo"
