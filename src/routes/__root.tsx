@@ -79,14 +79,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "RELATORIOS PMESP" },
+      { name: "description", content: "A web application for creating, managing, and archiving police patrol reports." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "RELATORIOS PMESP" },
+      { property: "og:description", content: "A web application for creating, managing, and archiving police patrol reports." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "RELATORIOS PMESP" },
+      { name: "twitter:description", content: "A web application for creating, managing, and archiving police patrol reports." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/92f8e668-35ea-48a5-9e64-3b87ae093037/id-preview-a8d2ae59--3aa51358-004f-4425-ab04-cadf9d9dc3e6.lovable.app-1780647843883.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/92f8e668-35ea-48a5-9e64-3b87ae093037/id-preview-a8d2ae59--3aa51358-004f-4425-ab04-cadf9d9dc3e6.lovable.app-1780647843883.png" },
     ],
     links: [
       {
