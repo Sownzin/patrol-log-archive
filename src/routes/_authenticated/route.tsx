@@ -54,14 +54,6 @@ function AuthenticatedLayout() {
               <LayoutDashboard className="h-4 w-4" />
               <span className="hidden sm:inline">Patrulha</span>
             </Link>
-            <Link
-              to="/viatura"
-              activeProps={{ className: "bg-primary/15 text-primary" }}
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Car className="h-4 w-4" />
-              <span className="hidden sm:inline">Viatura</span>
-            </Link>
 
             <Link
               to="/arquivo"
