@@ -71,13 +71,10 @@ function AuthPage() {
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: window.location.origin },
         });
         if (error) throw error;
 
-        // Try to immediately sign in so we can write the profile + upload avatar
-        const { data: signIn } = await supabase.auth.signInWithPassword({ email, password });
-        const userId = signIn.session?.user.id ?? data.user?.id;
+        const userId = data.session?.user.id ?? data.user?.id;
 
         if (userId) {
           let avatarPath: string | null = null;
@@ -99,11 +96,9 @@ function AuthPage() {
           });
         }
 
-        if (signIn.session) {
+        if (data.session) {
+          toast.success("Cadastro realizado com sucesso!");
           navigate({ to: "/", replace: true });
-        } else {
-          toast.success("Cadastro realizado. Verifique seu e-mail e entre.");
-          setMode("signin");
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
