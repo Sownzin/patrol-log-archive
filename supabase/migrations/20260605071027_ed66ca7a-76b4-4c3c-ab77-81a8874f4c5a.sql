@@ -1,0 +1,2 @@
+ALTER TABLE public.viatura_reports DROP CONSTRAINT IF EXISTS viatura_reports_status_check;
+ALTER TABLE public.viatura_reports ADD CONSTRAINT viatura_reports_status_check CHECK (status IN ('patrulhando','finalizado','arquivado'));
