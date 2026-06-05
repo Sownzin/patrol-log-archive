@@ -14,7 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      patrol_reports: {
+        Row: {
+          created_at: string
+          equipe: string
+          fim: string | null
+          graduacao: string
+          id: string
+          inicio: string
+          km_final: number | null
+          km_inicial: number
+          nome_guerra: string
+          ocorrencias: string | null
+          rg: string
+          status: string
+          updated_at: string
+          user_id: string
+          viatura: string
+        }
+        Insert: {
+          created_at?: string
+          equipe: string
+          fim?: string | null
+          graduacao: string
+          id?: string
+          inicio?: string
+          km_final?: number | null
+          km_inicial: number
+          nome_guerra: string
+          ocorrencias?: string | null
+          rg: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          viatura: string
+        }
+        Update: {
+          created_at?: string
+          equipe?: string
+          fim?: string | null
+          graduacao?: string
+          id?: string
+          inicio?: string
+          km_final?: number | null
+          km_inicial?: number
+          nome_guerra?: string
+          ocorrencias?: string | null
+          rg?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          viatura?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
