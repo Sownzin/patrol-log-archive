@@ -1,12 +1,13 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Shield } from "lucide-react";
+import { Shield, Upload, Loader2 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -19,13 +20,35 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+const PATENTES = [
+  "Soldado",
+  "Cabo",
+  "3º Sargento",
+  "2º Sargento",
+  "1º Sargento",
+  "Subtenente",
+  "Aspirante",
+  "2º Tenente",
+  "1º Tenente",
+  "Capitão",
+  "Major",
+  "Tenente-Coronel",
+  "Coronel",
+];
 
 function AuthPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [nome, setNome] = useState("");
+  const [rg, setRg] = useState("");
+  const [patente, setPatente] = useState("");
+  const [setor, setSetor] = useState("");
+  const [avatar, setAvatar] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -33,19 +56,55 @@ function AuthPage() {
     });
   }, [navigate]);
 
+  function onPick(f: File) {
+    setAvatar(f);
+    const r = new FileReader();
+    r.onload = () => setAvatarPreview(r.result as string);
+    r.readAsDataURL(f);
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: { emailRedirectTo: window.location.origin },
         });
         if (error) throw error;
-        toast.success("Cadastro realizado. Verifique seu e-mail se necessário e entre.");
-        setMode("signin");
+
+        // Try to immediately sign in so we can write the profile + upload avatar
+        const { data: signIn } = await supabase.auth.signInWithPassword({ email, password });
+        const userId = signIn.session?.user.id ?? data.user?.id;
+
+        if (userId) {
+          let avatarPath: string | null = null;
+          if (avatar) {
+            const ext = avatar.name.split(".").pop() || "png";
+            const path = `${userId}/avatar-${Date.now()}.${ext}`;
+            const { error: upErr } = await supabase.storage
+              .from("avatars")
+              .upload(path, avatar, { upsert: true, contentType: avatar.type });
+            if (!upErr) avatarPath = path;
+          }
+          await supabase.from("profiles").upsert({
+            id: userId,
+            nome_cidade: nome || null,
+            rg_cidade: rg || null,
+            patente: patente || null,
+            setor: setor || null,
+            avatar_url: avatarPath,
+          });
+        }
+
+        if (signIn.session) {
+          navigate({ to: "/", replace: true });
+        } else {
+          toast.success("Cadastro realizado. Verifique seu e-mail e entre.");
+          setMode("signin");
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -58,26 +117,88 @@ function AuthPage() {
     }
   }
 
+  const isSignup = mode === "signup";
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_oklch(0.78_0.14_85/0.08),transparent_60%)] pointer-events-none" />
       <Card className="relative w-full max-w-md p-8 border-border/60">
-        <div className="flex flex-col items-center mb-8">
+        <div className="flex flex-col items-center mb-6">
           <div className="h-14 w-14 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center mb-4">
             <Shield className="h-7 w-7 text-primary" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight">PMESP Relatórios</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {mode === "signin" ? "Acesso ao sistema de patrulha" : "Criar nova conta"}
+            {isSignup ? "Criar nova conta" : "Acesso ao sistema de patrulha"}
           </p>
         </div>
 
         <form onSubmit={onSubmit} className="space-y-4">
+          {isSignup && (
+            <>
+              <div className="flex items-center gap-4">
+                <Avatar className="h-16 w-16">
+                  <AvatarImage src={avatarPreview ?? undefined} />
+                  <AvatarFallback>{(nome || email)[0]?.toUpperCase() || "?"}</AvatarFallback>
+                </Avatar>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) onPick(f);
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileRef.current?.click()}
+                >
+                  <Upload className="h-4 w-4 mr-2" /> Foto de perfil
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2 col-span-2">
+                  <Label>Nome na cidade</Label>
+                  <Input value={nome} onChange={(e) => setNome(e.target.value)} required />
+                </div>
+                <div className="space-y-2">
+                  <Label>RG</Label>
+                  <Input value={rg} onChange={(e) => setRg(e.target.value)} required />
+                </div>
+                <div className="space-y-2">
+                  <Label>Setor</Label>
+                  <Input value={setor} onChange={(e) => setSetor(e.target.value)} required />
+                </div>
+                <div className="space-y-2 col-span-2">
+                  <Label>Patente</Label>
+                  <select
+                    value={patente}
+                    onChange={(e) => setPatente(e.target.value)}
+                    required
+                    className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+                  >
+                    <option value="">Selecione...</option>
+                    {PATENTES.map((p) => (
+                      <option key={p} value={p}>
+                        {p}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </>
+          )}
+
           <div className="space-y-2">
-            <Label htmlFor="email">E-mail</Label>
+            <Label htmlFor="email">E-mail ou usuário</Label>
             <Input
               id="email"
-              type="email"
+              type="text"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -97,18 +218,19 @@ function AuthPage() {
             />
           </div>
           <Button type="submit" disabled={loading} className="w-full">
-            {loading ? "Aguarde..." : mode === "signin" ? "Entrar" : "Cadastrar"}
+            {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            {isSignup ? "Cadastrar" : "Entrar"}
           </Button>
         </form>
 
         <div className="mt-6 text-center text-sm text-muted-foreground">
-          {mode === "signin" ? "Não tem conta? " : "Já tem conta? "}
+          {isSignup ? "Já tem conta? " : "Não tem conta? "}
           <button
             type="button"
-            onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+            onClick={() => setMode(isSignup ? "signin" : "signup")}
             className="text-primary hover:underline font-medium"
           >
-            {mode === "signin" ? "Cadastre-se" : "Entrar"}
+            {isSignup ? "Entrar" : "Cadastre-se"}
           </button>
         </div>
         <div className="mt-4 text-center">

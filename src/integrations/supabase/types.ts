@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      cargos: {
+        Row: {
+          cor: string
+          created_at: string
+          id: string
+          nome: string
+          ordem: number
+          updated_at: string
+        }
+        Insert: {
+          cor?: string
+          created_at?: string
+          id?: string
+          nome: string
+          ordem?: number
+          updated_at?: string
+        }
+        Update: {
+          cor?: string
+          created_at?: string
+          id?: string
+          nome?: string
+          ordem?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       patrol_reports: {
         Row: {
           created_at: string
@@ -77,6 +104,7 @@ export type Database = {
           nome_cidade: string | null
           patente: string | null
           rg_cidade: string | null
+          setor: string | null
           updated_at: string
         }
         Insert: {
@@ -87,6 +115,7 @@ export type Database = {
           nome_cidade?: string | null
           patente?: string | null
           rg_cidade?: string | null
+          setor?: string | null
           updated_at?: string
         }
         Update: {
@@ -97,7 +126,55 @@ export type Database = {
           nome_cidade?: string | null
           patente?: string | null
           rg_cidade?: string | null
+          setor?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      user_cargos: {
+        Row: {
+          assigned_at: string
+          cargo_id: string
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          cargo_id: string
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string
+          cargo_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_cargos_cargo_id_fkey"
+            columns: ["cargo_id"]
+            isOneToOne: false
+            referencedRelation: "cargos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
         }
         Relationships: []
       }
@@ -208,10 +285,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -338,6 +421,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
