@@ -68,6 +68,39 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          id: string
+          last_seen: string
+          nome_cidade: string | null
+          patente: string | null
+          rg_cidade: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          id: string
+          last_seen?: string
+          nome_cidade?: string | null
+          patente?: string | null
+          rg_cidade?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          last_seen?: string
+          nome_cidade?: string | null
+          patente?: string | null
+          rg_cidade?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       viatura_reports: {
         Row: {
           ak47: number
