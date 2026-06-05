@@ -1,8 +1,9 @@
 import { createFileRoute, Outlet, redirect, Link, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { Shield, Archive, LayoutDashboard, LogOut } from "lucide-react";
+import { Shield, Archive, LayoutDashboard, LogOut, UserCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { usePresence } from "@/hooks/use-presence";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -16,15 +17,27 @@ export const Route = createFileRoute("/_authenticated")({
 
 function AuthenticatedLayout() {
   const navigate = useNavigate();
+  const [userId, setUserId] = useState<string | undefined>();
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+    supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id));
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      setUserId(session?.user?.id);
       if (event === "SIGNED_OUT") navigate({ to: "/auth", replace: true });
     });
     return () => sub.subscription.unsubscribe();
   }, [navigate]);
 
+  usePresence(userId);
+
   async function handleLogout() {
+    if (userId) {
+      // mark offline immediately
+      await supabase
+        .from("profiles")
+        .update({ last_seen: new Date(0).toISOString() })
+        .eq("id", userId);
+    }
     await supabase.auth.signOut();
   }
 
@@ -63,6 +76,16 @@ function AuthenticatedLayout() {
               <Archive className="h-4 w-4" />
               <span className="hidden sm:inline">Arquivo</span>
             </Link>
+
+            <Link
+              to="/perfil"
+              activeProps={{ className: "bg-primary/15 text-primary" }}
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <UserCircle2 className="h-4 w-4" />
+              <span className="hidden sm:inline">Perfil</span>
+            </Link>
+
             <Button variant="ghost" size="sm" onClick={handleLogout} className="ml-2">
               <LogOut className="h-4 w-4" />
               <span className="hidden sm:inline ml-2">Sair</span>
