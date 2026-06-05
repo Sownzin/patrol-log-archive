@@ -68,7 +68,7 @@ function usernameFromEmail(email: string | null | undefined) {
 
 function PatrolPage() {
   const [userId, setUserId] = useState<string | null>(null);
-  const [username, setUsername] = useState<string>("");
+  const [nomeCidade, setNomeCidade] = useState<string>("");
   const [openPatrols, setOpenPatrols] = useState<ViaturaReport[]>([]);
   const [active, setActive] = useState<ViaturaReport | null>(null);
   const [loading, setLoading] = useState(true);
@@ -108,9 +108,19 @@ function PatrolPage() {
     setLoading(true);
     const { data: userData } = await supabase.auth.getUser();
     const uid = userData.user?.id ?? null;
-    const uname = usernameFromEmail(userData.user?.email);
+
+    let nc = "";
+    if (uid) {
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("nome_cidade")
+        .eq("id", uid)
+        .maybeSingle();
+      nc = prof?.nome_cidade ?? "";
+    }
+    if (!nc) nc = usernameFromEmail(userData.user?.email);
     setUserId(uid);
-    setUsername(uname);
+    setNomeCidade(nc);
 
     // Load all open patrols (visible to any authenticated user via RLS)
     const { data: open } = await supabase
@@ -123,7 +133,7 @@ function PatrolPage() {
 
     // Find patrol the user is in (owner or collaborator)
     const mine = opens.find(
-      (p) => p.user_id === uid || (p.colaboradores ?? []).includes(uname),
+      (p) => p.user_id === uid || (p.colaboradores ?? []).includes(nc),
     );
 
     if (mine) {
