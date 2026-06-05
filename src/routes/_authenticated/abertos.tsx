@@ -49,7 +49,7 @@ function elapsedFrom(iso: string) {
 function AbertosPage() {
   const [list, setList] = useState<ViaturaReport[]>([]);
   const [loading, setLoading] = useState(true);
-  const [username, setUsername] = useState("");
+  const [nomeCidade, setNomeCidade] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
   const [, setTick] = useState(0);
 
@@ -57,7 +57,20 @@ function AbertosPage() {
     setLoading(true);
     const { data: u } = await supabase.auth.getUser();
     setUserId(u.user?.id ?? null);
-    setUsername(usernameFromEmail(u.user?.email));
+
+    // Buscar nome_cidade do perfil
+    let nc = "";
+    if (u.user?.id) {
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("nome_cidade")
+        .eq("id", u.user.id)
+        .maybeSingle();
+      nc = prof?.nome_cidade ?? "";
+    }
+    if (!nc) nc = usernameFromEmail(u.user?.email);
+    setNomeCidade(nc);
+
     const { data, error } = await supabase
       .from("viatura_reports")
       .select("*")
@@ -80,13 +93,13 @@ function AbertosPage() {
 
   async function join(p: ViaturaReport) {
     const current = p.colaboradores ?? [];
-    if (!current.includes(username)) {
+    if (!current.includes(nomeCidade)) {
       const { error } = await supabase
         .from("viatura_reports")
-        .update({ colaboradores: [...current, username] })
+        .update({ colaboradores: [...current, nomeCidade] })
         .eq("id", p.id);
       if (error) return toast.error(error.message);
-      toast.success(`Conectado como ${username}`);
+      toast.success(`Conectado como ${nomeCidade}`);
     }
     window.location.assign("/");
   }
