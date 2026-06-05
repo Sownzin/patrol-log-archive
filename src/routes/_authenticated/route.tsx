@@ -1,9 +1,10 @@
 import { createFileRoute, Outlet, redirect, Link, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { Shield, Archive, LayoutDashboard, LogOut, UserCircle2, Users, Tag } from "lucide-react";
+import { Shield, Archive, LayoutDashboard, LogOut, UserCircle2, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { usePresence } from "@/hooks/use-presence";
+import { MembersSidebar } from "@/components/members-sidebar";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -84,7 +85,8 @@ function AuthenticatedLayout() {
               className={navLink}
             >
               <LayoutDashboard className="h-4 w-4" />
-              <span className="hidden sm:inline">Patrulha</span>
+              <span className="hidden sm:inline">Relatórios em aberto</span>
+              <span className="sm:hidden">Em aberto</span>
             </Link>
             <Link
               to="/arquivo"
@@ -92,45 +94,42 @@ function AuthenticatedLayout() {
               className={navLink}
             >
               <Archive className="h-4 w-4" />
-              <span className="hidden sm:inline">Arquivo</span>
+              <span className="hidden sm:inline">Arquivados</span>
             </Link>
-            <Link
-              to="/usuarios"
-              activeProps={{ className: "bg-primary/15 text-primary" }}
-              className={navLink}
-            >
-              <Users className="h-4 w-4" />
-              <span className="hidden sm:inline">Usuários</span>
-            </Link>
+
+            <div className="w-px h-6 bg-border/60 mx-1" />
+
             {isAdmin && (
               <Link
                 to="/cargos"
                 activeProps={{ className: "bg-primary/15 text-primary" }}
                 className={navLink}
+                title="Cargos"
               >
                 <Tag className="h-4 w-4" />
-                <span className="hidden sm:inline">Cargos</span>
               </Link>
             )}
             <Link
               to="/perfil"
               activeProps={{ className: "bg-primary/15 text-primary" }}
               className={navLink}
+              title="Perfil"
             >
               <UserCircle2 className="h-4 w-4" />
-              <span className="hidden sm:inline">Perfil</span>
             </Link>
-            <Button variant="ghost" size="sm" onClick={handleLogout} className="ml-1">
+            <Button variant="ghost" size="sm" onClick={handleLogout} className="ml-1" title="Sair">
               <LogOut className="h-4 w-4" />
-              <span className="hidden sm:inline ml-2">Sair</span>
             </Button>
           </nav>
         </div>
       </header>
 
-      <main className="flex-1">
-        <Outlet />
-      </main>
+      <div className="flex-1 flex">
+        <main className="flex-1 min-w-0">
+          <Outlet />
+        </main>
+        <MembersSidebar />
+      </div>
 
       <footer className="border-t border-border/60 py-4 text-center text-xs text-muted-foreground">
         Sistema interno de relatórios — Polícia Militar do Estado de São Paulo
