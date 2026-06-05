@@ -68,6 +68,105 @@ export type Database = {
         }
         Relationships: []
       }
+      viatura_reports: {
+        Row: {
+          ak47: number
+          anotador: string | null
+          auxiliar: string | null
+          c4: number
+          chefe_barca: string
+          cocaina: number
+          created_at: string
+          diamantes: number
+          dinheiro_sujo: number
+          five_seven: number
+          horario_entrada: string
+          horario_saida: string
+          id: string
+          lockpick: number
+          maconha: number
+          metanfetamina: number
+          motorista: string
+          municao_380: number
+          municao_762: number
+          num_prisoes: number
+          observacoes: string | null
+          pdw: number
+          placa: string
+          prefixo: string
+          setor_batalhao: string
+          status: string
+          ticket_corrida: number
+          updated_at: string
+          user_id: string
+          uzi: number
+        }
+        Insert: {
+          ak47?: number
+          anotador?: string | null
+          auxiliar?: string | null
+          c4?: number
+          chefe_barca: string
+          cocaina?: number
+          created_at?: string
+          diamantes?: number
+          dinheiro_sujo?: number
+          five_seven?: number
+          horario_entrada: string
+          horario_saida: string
+          id?: string
+          lockpick?: number
+          maconha?: number
+          metanfetamina?: number
+          motorista: string
+          municao_380?: number
+          municao_762?: number
+          num_prisoes?: number
+          observacoes?: string | null
+          pdw?: number
+          placa: string
+          prefixo: string
+          setor_batalhao: string
+          status?: string
+          ticket_corrida?: number
+          updated_at?: string
+          user_id: string
+          uzi?: number
+        }
+        Update: {
+          ak47?: number
+          anotador?: string | null
+          auxiliar?: string | null
+          c4?: number
+          chefe_barca?: string
+          cocaina?: number
+          created_at?: string
+          diamantes?: number
+          dinheiro_sujo?: number
+          five_seven?: number
+          horario_entrada?: string
+          horario_saida?: string
+          id?: string
+          lockpick?: number
+          maconha?: number
+          metanfetamina?: number
+          motorista?: string
+          municao_380?: number
+          municao_762?: number
+          num_prisoes?: number
+          observacoes?: string | null
+          pdw?: number
+          placa?: string
+          prefixo?: string
+          setor_batalhao?: string
+          status?: string
+          ticket_corrida?: number
+          updated_at?: string
+          user_id?: string
+          uzi?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
