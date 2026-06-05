@@ -200,17 +200,17 @@ function PatrolPage() {
 
   async function joinPatrol(p: ViaturaReport) {
     const current = p.colaboradores ?? [];
-    if (current.includes(username)) {
+    if (current.includes(nomeCidade)) {
       setActive(p);
       return;
     }
-    const next = [...current, username];
+    const next = [...current, nomeCidade];
     const { error } = await supabase
       .from("viatura_reports")
       .update({ colaboradores: next })
       .eq("id", p.id);
     if (error) return toast.error(error.message);
-    toast.success(`Conectado como ${username}`);
+    toast.success(`Conectado como ${nomeCidade}`);
     load();
   }
 
