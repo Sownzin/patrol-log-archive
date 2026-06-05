@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
-import { Route as AuthenticatedViaturaRouteImport } from './routes/_authenticated/viatura'
 import { Route as AuthenticatedArquivoRouteImport } from './routes/_authenticated/arquivo'
 
 const AuthRoute = AuthRouteImport.update({
@@ -29,11 +28,6 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedViaturaRoute = AuthenticatedViaturaRouteImport.update({
-  id: '/viatura',
-  path: '/viatura',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedArquivoRoute = AuthenticatedArquivoRouteImport.update({
   id: '/arquivo',
   path: '/arquivo',
@@ -44,12 +38,10 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRoute
   '/arquivo': typeof AuthenticatedArquivoRoute
-  '/viatura': typeof AuthenticatedViaturaRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/arquivo': typeof AuthenticatedArquivoRoute
-  '/viatura': typeof AuthenticatedViaturaRoute
   '/': typeof AuthenticatedIndexRoute
 }
 export interface FileRoutesById {
@@ -57,20 +49,18 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/arquivo': typeof AuthenticatedArquivoRoute
-  '/_authenticated/viatura': typeof AuthenticatedViaturaRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/arquivo' | '/viatura'
+  fullPaths: '/' | '/auth' | '/arquivo'
   fileRoutesByTo: FileRoutesByTo
-  to: '/auth' | '/arquivo' | '/viatura' | '/'
+  to: '/auth' | '/arquivo' | '/'
   id:
     | '__root__'
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/arquivo'
-    | '/_authenticated/viatura'
     | '/_authenticated/'
   fileRoutesById: FileRoutesById
 }
@@ -102,13 +92,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/viatura': {
-      id: '/_authenticated/viatura'
-      path: '/viatura'
-      fullPath: '/viatura'
-      preLoaderRoute: typeof AuthenticatedViaturaRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/arquivo': {
       id: '/_authenticated/arquivo'
       path: '/arquivo'
@@ -121,13 +104,11 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedArquivoRoute: typeof AuthenticatedArquivoRoute
-  AuthenticatedViaturaRoute: typeof AuthenticatedViaturaRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedArquivoRoute: AuthenticatedArquivoRoute,
-  AuthenticatedViaturaRoute: AuthenticatedViaturaRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
 
