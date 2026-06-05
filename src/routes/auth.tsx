@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Shield } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Acesso — PMESP Relatórios" },
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/auth")({
   }),
   component: AuthPage,
 });
+
 
 function AuthPage() {
   const navigate = useNavigate();
