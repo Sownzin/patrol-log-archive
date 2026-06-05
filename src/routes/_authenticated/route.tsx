@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect, Link, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { Shield, Archive, LayoutDashboard, LogOut, Car } from "lucide-react";
+import { Shield, Archive, LayoutDashboard, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
 
