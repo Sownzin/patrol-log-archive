@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect, Link, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { Shield, Archive, LayoutDashboard, LogOut, UserCircle2 } from "lucide-react";
+import { Shield, Archive, LayoutDashboard, LogOut, UserCircle2, Users, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { usePresence } from "@/hooks/use-presence";
@@ -18,12 +18,29 @@ export const Route = createFileRoute("/_authenticated")({
 function AuthenticatedLayout() {
   const navigate = useNavigate();
   const [userId, setUserId] = useState<string | undefined>();
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id));
+    const sync = async () => {
+      const { data } = await supabase.auth.getUser();
+      setUserId(data.user?.id);
+      if (data.user) {
+        const { data: r } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", data.user.id)
+          .eq("role", "admin")
+          .maybeSingle();
+        setIsAdmin(!!r);
+      } else {
+        setIsAdmin(false);
+      }
+    };
+    sync();
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       setUserId(session?.user?.id);
       if (event === "SIGNED_OUT") navigate({ to: "/auth", replace: true });
+      else sync();
     });
     return () => sub.subscription.unsubscribe();
   }, [navigate]);
@@ -32,7 +49,6 @@ function AuthenticatedLayout() {
 
   async function handleLogout() {
     if (userId) {
-      // mark offline immediately
       await supabase
         .from("profiles")
         .update({ last_seen: new Date(0).toISOString() })
@@ -41,11 +57,14 @@ function AuthenticatedLayout() {
     await supabase.auth.signOut();
   }
 
+  const navLink =
+    "inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground transition-colors";
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="border-b border-border/60 bg-card/40 backdrop-blur">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 group">
+        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-2">
+          <Link to="/" className="flex items-center gap-2 group shrink-0">
             <div className="h-9 w-9 rounded-md bg-primary/15 border border-primary/40 flex items-center justify-center">
               <Shield className="h-5 w-5 text-primary" />
             </div>
@@ -57,36 +76,51 @@ function AuthenticatedLayout() {
             </div>
           </Link>
 
-          <nav className="flex items-center gap-1">
+          <nav className="flex items-center gap-1 overflow-x-auto">
             <Link
               to="/"
               activeOptions={{ exact: true }}
               activeProps={{ className: "bg-primary/15 text-primary" }}
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              className={navLink}
             >
               <LayoutDashboard className="h-4 w-4" />
               <span className="hidden sm:inline">Patrulha</span>
             </Link>
-
             <Link
               to="/arquivo"
               activeProps={{ className: "bg-primary/15 text-primary" }}
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              className={navLink}
             >
               <Archive className="h-4 w-4" />
               <span className="hidden sm:inline">Arquivo</span>
             </Link>
-
+            <Link
+              to="/usuarios"
+              activeProps={{ className: "bg-primary/15 text-primary" }}
+              className={navLink}
+            >
+              <Users className="h-4 w-4" />
+              <span className="hidden sm:inline">Usuários</span>
+            </Link>
+            {isAdmin && (
+              <Link
+                to="/cargos"
+                activeProps={{ className: "bg-primary/15 text-primary" }}
+                className={navLink}
+              >
+                <Tag className="h-4 w-4" />
+                <span className="hidden sm:inline">Cargos</span>
+              </Link>
+            )}
             <Link
               to="/perfil"
               activeProps={{ className: "bg-primary/15 text-primary" }}
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              className={navLink}
             >
               <UserCircle2 className="h-4 w-4" />
               <span className="hidden sm:inline">Perfil</span>
             </Link>
-
-            <Button variant="ghost" size="sm" onClick={handleLogout} className="ml-2">
+            <Button variant="ghost" size="sm" onClick={handleLogout} className="ml-1">
               <LogOut className="h-4 w-4" />
               <span className="hidden sm:inline ml-2">Sair</span>
             </Button>
