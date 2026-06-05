@@ -76,6 +76,7 @@ export type Database = {
           c4: number
           chefe_barca: string
           cocaina: number
+          colaboradores: string[]
           created_at: string
           diamantes: number
           dinheiro_sujo: number
@@ -108,6 +109,7 @@ export type Database = {
           c4?: number
           chefe_barca: string
           cocaina?: number
+          colaboradores?: string[]
           created_at?: string
           diamantes?: number
           dinheiro_sujo?: number
@@ -140,6 +142,7 @@ export type Database = {
           c4?: number
           chefe_barca?: string
           cocaina?: number
+          colaboradores?: string[]
           created_at?: string
           diamantes?: number
           dinheiro_sujo?: number
