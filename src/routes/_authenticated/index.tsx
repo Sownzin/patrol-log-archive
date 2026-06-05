@@ -189,7 +189,7 @@ function PatrolPage() {
       chefe_barca: startForm.chefe_barca,
       auxiliar: startForm.auxiliar || null,
       anotador: startForm.anotador || null,
-      colaboradores: [usernameFromEmail(userData.user.email)],
+      colaboradores: [nomeCidade || usernameFromEmail(userData.user.email)],
     });
     setSaving(false);
     if (error) return toast.error(error.message);
