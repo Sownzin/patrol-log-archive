@@ -6,14 +6,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
   Radio, Clock, Car, FileText, CheckCircle2, Archive, Copy,
-  Banknote, Pill, Crosshair, Package, Users,
+  Banknote, Pill, Crosshair, Package, Users, UserPlus,
 } from "lucide-react";
 
 type ViaturaReport = {
   id: string;
+  user_id: string;
   horario_entrada: string;
   horario_saida: string;
   setor_batalhao: string;
@@ -39,6 +41,7 @@ type ViaturaReport = {
   chefe_barca: string;
   auxiliar: string | null;
   anotador: string | null;
+  colaboradores: string[] | null;
   status: string;
   created_at: string;
 };
@@ -58,7 +61,15 @@ function fmtTime(d: Date) {
   return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
+function usernameFromEmail(email: string | null | undefined) {
+  if (!email) return "usuário";
+  return email.split("@")[0];
+}
+
 function PatrolPage() {
+  const [userId, setUserId] = useState<string | null>(null);
+  const [username, setUsername] = useState<string>("");
+  const [openPatrols, setOpenPatrols] = useState<ViaturaReport[]>([]);
   const [active, setActive] = useState<ViaturaReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -95,22 +106,50 @@ function PatrolPage() {
 
   async function load() {
     setLoading(true);
-    const { data, error } = await supabase
+    const { data: userData } = await supabase.auth.getUser();
+    const uid = userData.user?.id ?? null;
+    const uname = usernameFromEmail(userData.user?.email);
+    setUserId(uid);
+    setUsername(uname);
+
+    // Load all open patrols (visible to any authenticated user via RLS)
+    const { data: open } = await supabase
       .from("viatura_reports")
       .select("*")
       .eq("status", "patrulhando")
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    if (error) toast.error(error.message);
-    setActive((data as ViaturaReport) ?? null);
+      .order("created_at", { ascending: false });
+    const opens = (open as ViaturaReport[]) ?? [];
+    setOpenPatrols(opens);
+
+    // Find patrol the user is in (owner or collaborator)
+    const mine = opens.find(
+      (p) => p.user_id === uid || (p.colaboradores ?? []).includes(uname),
+    );
+
+    if (mine) {
+      setActive(mine);
+    } else {
+      // Check if user has a finalized but not archived report to show
+      const { data: finalized } = await supabase
+        .from("viatura_reports")
+        .select("*")
+        .eq("status", "finalizado")
+        .eq("user_id", uid ?? "")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      setActive((finalized as ViaturaReport) ?? null);
+    }
     setLoading(false);
   }
 
   useEffect(() => { load(); }, []);
 
   useEffect(() => {
-    if (!active) return;
+    if (!active || active.status !== "patrulhando") {
+      setElapsed("");
+      return;
+    }
     const tick = () => {
       const ms = Date.now() - new Date(active.created_at).getTime();
       const h = Math.floor(ms / 3600000);
@@ -140,11 +179,28 @@ function PatrolPage() {
       chefe_barca: startForm.chefe_barca,
       auxiliar: startForm.auxiliar || null,
       anotador: startForm.anotador || null,
+      colaboradores: [usernameFromEmail(userData.user.email)],
     });
     setSaving(false);
     if (error) return toast.error(error.message);
     toast.success("Patrulha iniciada — tempo correndo");
     setStartForm({ setor_batalhao: "", prefixo: "", placa: "", motorista: "", chefe_barca: "", auxiliar: "", anotador: "" });
+    load();
+  }
+
+  async function joinPatrol(p: ViaturaReport) {
+    const current = p.colaboradores ?? [];
+    if (current.includes(username)) {
+      setActive(p);
+      return;
+    }
+    const next = [...current, username];
+    const { error } = await supabase
+      .from("viatura_reports")
+      .update({ colaboradores: next })
+      .eq("id", p.id);
+    if (error) return toast.error(error.message);
+    toast.success(`Conectado como ${username}`);
     load();
   }
 
@@ -174,6 +230,10 @@ function PatrolPage() {
 
   async function archive() {
     if (!active) return;
+    if (active.user_id !== userId) {
+      toast.error("Apenas o criador da patrulha pode arquivar");
+      return;
+    }
     setSaving(true);
     const { error } = await supabase
       .from("viatura_reports")
@@ -190,6 +250,7 @@ function PatrolPage() {
       municao_380: 0, municao_762: 0,
       ticket_corrida: 0, lockpick: 0, diamantes: 0, c4: 0,
     });
+    load();
   }
 
   function copyReport() {
@@ -205,22 +266,58 @@ function PatrolPage() {
     return <div className="max-w-4xl mx-auto p-8 text-muted-foreground">Carregando…</div>;
   }
 
-  // ============ NO ACTIVE PATROL: start form ============
+  // ============ NO ACTIVE PATROL: list open patrols + start form ============
   if (!active) {
+    const others = openPatrols.filter((p) => p.user_id !== userId);
     return (
       <div className="max-w-4xl mx-auto p-4 sm:p-8 space-y-6">
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
             <Radio className="h-6 w-6 text-primary" />
-            Iniciar patrulha
+            Patrulha
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Preencha a unidade e a equipe. Ao iniciar, o cronômetro começa e o horário de entrada é registrado automaticamente.
+            Inicie uma nova patrulha ou conecte-se a uma em andamento.
           </p>
         </div>
 
+        {others.length > 0 && (
+          <Card className="p-6 border-primary/40">
+            <h2 className="font-semibold flex items-center gap-2 mb-4">
+              <Users className="h-4 w-4 text-primary" />
+              Patrulhas em aberto ({others.length})
+            </h2>
+            <div className="space-y-3">
+              {others.map((p) => (
+                <div key={p.id} className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border/60 bg-secondary/30">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold">VTR {p.placa} · {p.prefixo}</span>
+                      <Badge variant="secondary" className="text-[10px]">{p.setor_batalhao}</Badge>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1 truncate">
+                      Motorista: {p.motorista} · Chefe: {p.chefe_barca}
+                      {(p.colaboradores?.length ?? 0) > 0 && (
+                        <> · 👥 {p.colaboradores!.join(", ")}</>
+                      )}
+                    </div>
+                  </div>
+                  <Button size="sm" onClick={() => joinPatrol(p)}>
+                    <UserPlus className="h-4 w-4 mr-1" />Conectar
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+
         <Card className="p-6">
           <form onSubmit={startPatrol} className="space-y-6">
+            <h2 className="font-semibold flex items-center gap-2">
+              <FileText className="h-4 w-4 text-primary" />
+              Iniciar nova patrulha
+            </h2>
+
             <Section title="Unidade">
               <div className="grid sm:grid-cols-3 gap-4">
                 <Field label="🗺️ Setor/Batalhão" value={startForm.setor_batalhao} onChange={(v) => setStartForm({ ...startForm, setor_batalhao: v })} required />
@@ -250,6 +347,7 @@ function PatrolPage() {
 
   // ============ ACTIVE PATROL ============
   const isFinalized = active.status === "finalizado";
+  const isOwner = active.user_id === userId;
 
   return (
     <div className="max-w-4xl mx-auto p-4 sm:p-8 space-y-6">
@@ -260,12 +358,12 @@ function PatrolPage() {
             <span className="relative inline-flex rounded-full h-3 w-3 bg-primary" />
           </span>
         )}
-        <div>
+        <div className="flex-1">
           <h1 className="text-2xl font-bold tracking-tight">
             {isFinalized ? "PATRULHA FINALIZADA" : "EM PATRULHAMENTO"}
           </h1>
           <p className="text-xs text-muted-foreground uppercase tracking-widest">
-            {isFinalized ? "Pronto para arquivar" : "Cronômetro ativo"}
+            {isFinalized ? "Pronto para arquivar" : isOwner ? "Cronômetro ativo · você é o criador" : `Conectado como ${username}`}
           </p>
         </div>
       </div>
@@ -285,6 +383,18 @@ function PatrolPage() {
           <Info label="Auxiliar" value={active.auxiliar ?? "—"} />
           <Info label="Anotador" value={active.anotador ?? "—"} />
         </div>
+        {(active.colaboradores?.length ?? 0) > 0 && (
+          <div className="mt-4 pt-4 border-t border-border/60">
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-1">
+              <Users className="h-3 w-3" />Colaboradores conectados
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {active.colaboradores!.map((c) => (
+                <Badge key={c} variant={c === username ? "default" : "secondary"} className="text-xs">{c}</Badge>
+              ))}
+            </div>
+          </div>
+        )}
       </Card>
 
       {!isFinalized ? (
@@ -353,9 +463,11 @@ function PatrolPage() {
             <Button onClick={copyReport} variant="secondary">
               <Copy className="h-4 w-4 mr-2" />Copiar para Discord
             </Button>
-            <Button onClick={archive} disabled={saving}>
-              <Archive className="h-4 w-4 mr-2" />Arquivar relatório
-            </Button>
+            {isOwner && (
+              <Button onClick={archive} disabled={saving}>
+                <Archive className="h-4 w-4 mr-2" />Arquivar relatório
+              </Button>
+            )}
           </div>
         </Card>
       )}
@@ -420,6 +532,9 @@ function NumField({
 
 function formatReport(r: ViaturaReport): string {
   const sep = "———————————————————————";
+  const colab = r.colaboradores && r.colaboradores.length > 0
+    ? `\n👥 Colaboradores: ${r.colaboradores.join(", ")}`
+    : "";
   return [
     "📝 Painel de Relatório - Viatura",
     sep,
@@ -465,6 +580,7 @@ function formatReport(r: ViaturaReport): string {
     `👮‍♂️ Chefe de Barca: ${r.chefe_barca}`,
     `👮‍♂️ Auxiliar: ${r.auxiliar ?? "—"}`,
     `👮‍♂️ Anotador: ${r.anotador ?? "—"}`,
+    colab,
     sep,
   ].join("\n");
 }
