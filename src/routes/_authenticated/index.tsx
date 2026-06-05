@@ -373,7 +373,7 @@ function PatrolPage() {
             {isFinalized ? "PATRULHA FINALIZADA" : "EM PATRULHAMENTO"}
           </h1>
           <p className="text-xs text-muted-foreground uppercase tracking-widest">
-            {isFinalized ? "Pronto para arquivar" : isOwner ? "Cronômetro ativo · você é o criador" : `Conectado como ${username}`}
+            {isFinalized ? "Pronto para arquivar" : isOwner ? "Cronômetro ativo · você é o criador" : `Conectado como ${nomeCidade}`}
           </p>
         </div>
       </div>
@@ -400,7 +400,7 @@ function PatrolPage() {
             </div>
             <div className="flex flex-wrap gap-2">
               {active.colaboradores!.map((c) => (
-                <Badge key={c} variant={c === username ? "default" : "secondary"} className="text-xs">{c}</Badge>
+                <Badge key={c} variant={c === nomeCidade ? "default" : "secondary"} className="text-xs">{c}</Badge>
               ))}
             </div>
           </div>
