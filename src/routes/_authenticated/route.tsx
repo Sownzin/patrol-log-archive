@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, redirect, Link, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { Shield, Archive, LogOut, UserCircle2, Tag, FilePlus2, Radio } from "lucide-react";
+import { Archive, LogOut, UserCircle2, Tag, FilePlus2, Radio } from "lucide-react";
+import { PmespLogo } from "@/components/pmesp-logo";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { usePresence } from "@/hooks/use-presence";
@@ -66,9 +67,7 @@ function AuthenticatedLayout() {
       <header className="border-b border-border/60 bg-card/40 backdrop-blur">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-2">
           <Link to="/" className="flex items-center gap-2 group shrink-0">
-            <div className="h-9 w-9 rounded-md bg-primary/15 border border-primary/40 flex items-center justify-center">
-              <Shield className="h-5 w-5 text-primary" />
-            </div>
+            <PmespLogo className="h-9 w-9" />
             <div>
               <div className="text-sm font-bold tracking-tight leading-none">PMESP</div>
               <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5">

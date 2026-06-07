@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, Shield, BadgeCheck, Clock } from "lucide-react";
+import { Loader2, ArrowLeft, BadgeCheck, Clock } from "lucide-react";
+import { PmespLogo } from "@/components/pmesp-logo";
 import { isOnline } from "@/hooks/use-presence";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -172,7 +173,7 @@ function PerfilPublicoPage() {
               <div className="text-sm text-muted-foreground flex items-center gap-2 mt-0.5">
                 {profile.patente && (
                   <span className="flex items-center gap-1">
-                    <Shield className="h-3.5 w-3.5" /> {profile.patente}
+                    <PmespLogo className="h-3.5 w-3.5" /> {profile.patente}
                   </span>
                 )}
                 {profile.rg_cidade && (
