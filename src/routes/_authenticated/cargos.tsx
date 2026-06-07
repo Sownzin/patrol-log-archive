@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2, Plus, Shield, Trash2 } from "lucide-react";
+import { Loader2, Plus, Trash2 } from "lucide-react";
+import { PmespLogo } from "@/components/pmesp-logo";
 
 export const Route = createFileRoute("/_authenticated/cargos")({
   beforeLoad: async () => {
@@ -106,7 +107,7 @@ function CargosPage() {
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          <Shield className="h-6 w-6 text-primary" /> Cargos
+          <PmespLogo className="h-7 w-7" /> Cargos
         </h1>
         <p className="text-sm text-muted-foreground">
           Crie cargos personalizados e atribua aos membros.

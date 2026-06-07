@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Shield, Upload, Loader2 } from "lucide-react";
+import { Upload, Loader2 } from "lucide-react";
+import { PmespLogo } from "@/components/pmesp-logo";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export const Route = createFileRoute("/auth")({
@@ -119,9 +120,7 @@ function AuthPage() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_oklch(0.78_0.14_85/0.08),transparent_60%)] pointer-events-none" />
       <Card className="relative w-full max-w-md p-8 border-border/60">
         <div className="flex flex-col items-center mb-6">
-          <div className="h-14 w-14 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center mb-4">
-            <Shield className="h-7 w-7 text-primary" />
-          </div>
+          <PmespLogo className="h-16 w-16 mb-4" />
           <h1 className="text-2xl font-bold tracking-tight">PMESP Relatórios</h1>
           <p className="text-sm text-muted-foreground mt-1">
             {isSignup ? "Criar nova conta" : "Acesso ao sistema de patrulha"}
