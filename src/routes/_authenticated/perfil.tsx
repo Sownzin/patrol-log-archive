@@ -130,7 +130,7 @@ function PerfilPage() {
     if (oldPath) await supabase.storage.from(bucket).remove([oldPath]);
     const { error } = await supabase
       .from("profiles")
-      .update({ [field]: path })
+      .update(field === "avatar_url" ? { avatar_url: path } : { banner_url: path })
       .eq("id", userId);
     if (error) toast.error(error.message);
     else {
