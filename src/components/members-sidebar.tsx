@@ -149,7 +149,8 @@ export function MembersSidebar() {
                     return (
                       <li key={m.id}>
                         <Link
-                          to="/perfil"
+                          to="/perfil/$id"
+                          params={{ id: m.id }}
                           className={`flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-secondary/60 transition-colors ${
                             online ? "" : "opacity-50 hover:opacity-100"
                           }`}
