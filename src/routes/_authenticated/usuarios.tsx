@@ -132,53 +132,59 @@ function UsuariosPage() {
                     const online = isOnline(m.last_seen);
                     const userCargoIds = userCargos[m.id] ?? [];
                     return (
-                      <li key={m.id} className="flex items-center gap-3 py-3">
-                        <div className="relative">
-                          <Avatar className="h-10 w-10">
-                            <AvatarImage src={avatars[m.id] ?? undefined} />
-                            <AvatarFallback>
-                              {(m.nome_cidade || "?")[0]?.toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span
-                            className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-background ${
-                              online ? "bg-emerald-500" : "bg-muted-foreground/50"
-                            }`}
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium truncate flex items-center gap-2 flex-wrap">
-                            {m.nome_cidade || "Sem nome"}
-                            {userCargoIds.map((cid) => {
-                              const c = cargoById.get(cid);
-                              if (!c) return null;
-                              return (
-                                <span
-                                  key={cid}
-                                  className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded"
-                                  style={{
-                                    color: c.cor,
-                                    backgroundColor: `${c.cor}22`,
-                                    border: `1px solid ${c.cor}55`,
-                                  }}
-                                >
-                                  {c.nome}
-                                </span>
-                              );
-                            })}
-                          </div>
-                          <div className="text-xs text-muted-foreground truncate">
-                            {m.rg_cidade ? `RG ${m.rg_cidade}` : "Sem RG"}
-                            {m.setor ? ` · ${m.setor}` : ""}
-                          </div>
-                        </div>
-                        <span
-                          className={`text-xs font-medium ${
-                            online ? "text-emerald-500" : "text-muted-foreground"
-                          }`}
+                      <li key={m.id}>
+                        <Link
+                          to="/perfil/$id"
+                          params={{ id: m.id }}
+                          className="flex items-center gap-3 py-3 hover:bg-secondary/40 -mx-2 px-2 rounded-md transition"
                         >
-                          {online ? "Online" : "Offline"}
-                        </span>
+                          <div className="relative">
+                            <Avatar className="h-10 w-10">
+                              <AvatarImage src={avatars[m.id] ?? undefined} />
+                              <AvatarFallback>
+                                {(m.nome_cidade || "?")[0]?.toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span
+                              className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-background ${
+                                online ? "bg-emerald-500" : "bg-muted-foreground/50"
+                              }`}
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium truncate flex items-center gap-2 flex-wrap">
+                              {m.nome_cidade || "Sem nome"}
+                              {userCargoIds.map((cid) => {
+                                const c = cargoById.get(cid);
+                                if (!c) return null;
+                                return (
+                                  <span
+                                    key={cid}
+                                    className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded"
+                                    style={{
+                                      color: c.cor,
+                                      backgroundColor: `${c.cor}22`,
+                                      border: `1px solid ${c.cor}55`,
+                                    }}
+                                  >
+                                    {c.nome}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                            <div className="text-xs text-muted-foreground truncate">
+                              {m.rg_cidade ? `RG ${m.rg_cidade}` : "Sem RG"}
+                              {m.setor ? ` · ${m.setor}` : ""}
+                            </div>
+                          </div>
+                          <span
+                            className={`text-xs font-medium ${
+                              online ? "text-emerald-500" : "text-muted-foreground"
+                            }`}
+                          >
+                            {online ? "Online" : "Offline"}
+                          </span>
+                        </Link>
                       </li>
                     );
                   })}
